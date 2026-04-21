@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧬 灵魂生成器 — 给新 Agent 注入灵魂</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090f;
+      --bg-secondary: #0f0f18;
+      --surface: #12121c;
+      --card: #1a1a28;
+      --card-hover: #22222f;
+      --border: rgba(245, 158, 11, 0.12);
+      --border-bright: rgba(245, 158, 11, 0.35);
+      --amber: #f59e0b;
+      --amber-light: #fbbf24;
+      --amber-dim: #d97706;
+      --amber-glow: rgba(245, 158, 11, 0.2);
+      --amber-glow-strong: rgba(245, 158, 11, 0.4);
+      --text: #f4f4f5;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --blue: #3b82f6;
+      --purple: #a78bfa;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background particles */
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 50%;
+      opacity: 0.15;
+      animation: float-particle linear infinite;
+    }
+    @keyframes float-particle {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 0.15; }
+      90% { opacity: 0.15; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* Layout */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 60px 0 48px;
+    }
+    header h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 50%, #fff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Main grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+      }
+      .robot-section { grid-column: 1 / -1; order: -1; }
+    }
+    @media (max-width: 640px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Panel */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title .icon { font-size: 20px; }
+
+    /* Filter pills */
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .filter-pill {
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-pill:hover { border-color: var(--amber-dim); color: var(--text); }
+    .filter-pill.active {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: #000;
+    }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .cards-grid::-webkit-scrollbar { width: 4px; }
+    .cards-grid::-webkit-scrollbar-thumb { background: var(--amber-dim); border-radius: 2px; }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+      animation: card-appear 0.4s ease backwards;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--amber-glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px var(--amber-glow);
+    }
+    .card:hover::before { opacity: 1; }
+    .card.selected {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 1px var(--amber), 0 0 30px var(--amber-glow-strong);
+      animation: card-select-pulse 2s ease-in-out infinite;
+    }
+    .card.selected::before { opacity: 1; }
+    @keyframes card-appear {
+      from { opacity: 0; transform: translateY(12px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes card-select-pulse {
+      0%, 100% { box-shadow: 0 0 0 1px var(--amber), 0 0 20px var(--amber-glow); }
+      50% { box-shadow: 0 0 0 1px var(--amber), 0 0 40px var(--amber-glow-strong); }
+    }
+
+    .card-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; }
+    .card-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 100px;
+      background: var(--amber-glow);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    .card-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #000;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .card.selected .card-check { opacity: 1; transform: scale(1); }
+
+    /* Robot Section */
+    .robot-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .robot-container {
+      position: relative;
+      width: 220px;
+      height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .robot-glow {
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+    .robot-container.has-items .robot-glow { opacity: 1; animation: glow-pulse 3s ease-in-out infinite; }
+    @keyframes glow-pulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .robot-body {
+      position: relative;
+      z-index: 1;
+      width: 180px;
+      height: 240px;
+      animation: robot-float 4s ease-in-out infinite;
+    }
+    @keyframes robot-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Robot SVG illustration */
+    .robot-svg { width: 100%; height: 100%; }
+
+    .robot-counts {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 20px;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .count-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .count-badge.skills { color: var(--blue); }
+    .count-badge.traits { color: var(--purple); }
+
+    /* Flying card animation */
+    .flying-card {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Selected items list */
+    .selected-list {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .selected-list-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .selected-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .selected-item:last-child { border-bottom: none; }
+    .selected-item-icon { font-size: 16px; }
+    .selected-item-name { flex: 1; }
+    .selected-item-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .selected-item-remove:hover { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 8px; display: block; opacity: 0.5; }
+
+    /* Export Panel */
+    .export-section {
+      margin-top: 40px;
+    }
+    .export-toggle {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text);
+    }
+    .export-toggle:hover { border-color: var(--amber-dim); }
+    .export-toggle-left { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+    .export-toggle-icon { transition: transform 0.3s; font-size: 12px; color: var(--text-muted); }
+    .export-toggle.open .export-toggle-icon { transform: rotate(180deg); }
+
+    .export-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s ease, padding 0.3s;
+    }
+    .export-panel.open { max-height: 600px; padding: 24px; }
+
+    .export-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .export-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .export-tab:hover { border-color: var(--amber-dim); color: var(--text); }
+    .export-tab.active { background: var(--amber); border-color: var(--amber); color: #000; }
+
+    .export-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--text-secondary);
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .export-code::-webkit-scrollbar { width: 4px; }
+    .export-code::-webkit-scrollbar-thumb { background: var(--amber-dim); border-radius: 2px; }
+    .export-code .comment { color: var(--text-muted); }
+    .export-code .command { color: var(--amber); }
+    .export-code .section { color: var(--blue); font-weight: 600; }
+    .export-code .trait { color: var(--purple); }
+
+    .export-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dim) 100%);
+      color: #000;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--amber-glow-strong); }
+    .btn-secondary {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { border-color: var(--amber-dim); }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--amber);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--amber);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 16px 0;
+      margin-bottom: 8px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--amber);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background particles -->
+<div class="bg-particles" id="particles"></div>
+
+<div class="app">
+  <header>
+    <h1>🧬 灵魂生成器</h1>
+    <p>为你的新 Agent 选择技能与灵魂特质，组装独一无二的数字生命</p>
+  </header>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value" id="total-skills">0</div>
+      <div class="stat-label">技能已选</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="total-traits">0</div>
+      <div class="stat-label">特质已选</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- Skills Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">⚡</span> 技能卡片</div>
+      </div>
+      <div class="filters" id="skill-filters">
+        <button class="filter-pill active" data-filter="all">全部</button>
+        <button class="filter-pill" data-filter="dev">开发</button>
+        <button class="filter-pill" data-filter="tool">工具</button>
+        <button class="filter-pill" data-filter="ai">AI</button>
+        <button class="filter-pill" data-filter="sys">系统</button>
+      </div>
+      <div class="cards-grid" id="skills-grid"></div>
+    </div>
+
+    <!-- Robot Section -->
+    <div class="robot-section">
+      <div class="panel" style="width:100%; text-align:center;">
+        <div class="panel-title" style="justify-content:center; margin-bottom:16px;">
+          <span class="icon">🤖</span> 机器人容器
+        </div>
+
+        <div class="robot-container" id="robot-container">
+          <div class="robot-glow"></div>
+          <div class="robot-body">
+            <svg class="robot-svg" viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Antenna -->
+              <line x1="90" y1="10" x2="90" y2="30" stroke="#f59e0b" stroke-width="2"/>
+              <circle cx="90" cy="8" r="5" fill="#f59e0b" opacity="0.8">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Head -->
+              <rect x="50" y="30" width="80" height="60" rx="12" fill="#1a1a28" stroke="#f59e0b" stroke-width="1.5"/>
+              <!-- Eyes -->
+              <circle cx="70" cy="58" r="8" fill="#f59e0b" opacity="0.9">
+                <animate attributeName="r" values="8;9;8" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="110" cy="58" r="8" fill="#f59e0b" opacity="0.9">
+                <animate attributeName="r" values="8;9;8" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Eye inner -->
+              <circle cx="72" cy="56" r="3" fill="#fff" opacity="0.6"/>
+              <circle cx="112" cy="56" r="3" fill="#fff" opacity="0.6"/>
+              <!-- Mouth -->
+              <rect x="72" y="74" width="36" height="4" rx="2" fill="#f59e0b" opacity="0.4"/>
+              <!-- Neck -->
+              <rect x="82" y="92" width="16" height="10" fill="#2a2a3a"/>
+              <!-- Body -->
+              <rect x="40" y="102" width="100" height="90" rx="14" fill="#1a1a28" stroke="#f59e0b" stroke-width="1.5"/>
+              <!-- Chest panel -->
+              <rect x="56" y="114" width="68" height="50" rx="8" fill="#12121c" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+              <!-- Chest lights -->
+              <circle cx="75" cy="132" r="5" fill="#3b82f6" opacity="0.8">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="90" cy="132" r="5" fill="#a78bfa" opacity="0.8">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+              </circle>
+              <circle cx="105" cy="132" r="5" fill="#22c55e" opacity="0.8">
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+              </circle>
+              <!-- Chest bar -->
+              <rect x="68" y="148" width="44" height="6" rx="3" fill="rgba(245,158,11,0.15)"/>
+              <rect id="chest-bar" x="68" y="148" width="0" height="6" rx="3" fill="#f59e0b">
+                <animate attributeName="width" values="0;0" dur="0.5s" fill="freeze"/>
+              </rect>
+              <!-- Arms -->
+              <rect x="15" y="108" width="22" height="55" rx="10" fill="#1a1a28" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+              <rect x="143" y="108" width="22" height="55" rx="10" fill="#1a1a28" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+              <!-- Arm joints -->
+              <circle cx="26" cy="118" r="5" fill="#2a2a3a" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+              <circle cx="154" cy="118" r="5" fill="#2a2a3a" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+              <!-- Legs -->
+              <rect x="55" y="195" width="28" height="40" rx="10" fill="#1a1a28" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+              <rect x="97" y="195" width="28" height="40" rx="10" fill="#1a1a28" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+              <!-- Leg joints -->
+              <circle cx="69" cy="205" r="6" fill="#2a2a3a" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+              <circle cx="111" cy="205" r="6" fill="#2a2a3a" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+            </svg>
+          </div>
+          <div class="robot-counts">
+            <span class="count-badge skills">
+              <span>⚡</span><span id="skill-count">0</span>
+            </span>
+            <span class="count-badge traits">
+              <span>🧠</span><span id="trait-count">0</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected list -->
+      <div class="selected-list" id="selected-list">
+        <div class="empty-state">
+          <span class="icon">✨</span>
+          点击左侧技能或特质卡片，组装你的灵魂
+        </div>
+      </div>
+    </div>
+
+    <!-- Soul Traits Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">🧠</span> 灵魂特质</div>
+      </div>
+      <div class="filters" id="trait-filters">
+        <button class="filter-pill active" data-filter="all">全部</button>
+        <button class="filter-pill" data-filter="thinking">思维方式</button>
+        <button class="filter-pill" data-filter="work">工作风格</button>
+        <button class="filter-pill" data-filter="express">表达风格</button>
+      </div>
+      <div class="cards-grid" id="traits-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- Export Section -->
+  <div class="export-section">
+    <div class="export-toggle" id="export-toggle">
+      <div class="export-toggle-left">
+        <span>📦</span>
+        <span>生成 & 导出</span>
+        <span id="export-summary" style="font-weight:400;color:var(--text-muted);font-size:13px;"></span>
+      </div>
+      <span class="export-toggle-icon">▼</span>
+    </div>
+    <div class="export-panel" id="export-panel">
+      <div class="export-tabs">
+        <button class="export-tab active" data-tab="install">安装命令</button>
+        <button class="export-tab" data-tab="soul">灵魂配置</button>
+      </div>
+      <div class="export-code" id="export-code"></div>
+      <div class="export-actions">
+        <button class="btn btn-primary" id="copy-btn">📋 复制命令</button>
+        <button class="btn btn-secondary" id="download-btn">💾 下载配置</button>
+        <button class="btn btn-secondary" id="refresh-btn">🔄 刷新预览</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Data ==========
+const SKILLS_DATA = [
+  { id: 'github', name: 'GitHub', icon: '🔧', desc: 'GitHub 接口交互，PR/Issue/代码管理', category: 'dev' },
+  { id: 'github-trending-stable', name: 'GitHub Trending', icon: '📊', desc: '获取 GitHub 热门项目排行榜', category: 'dev' },
+  { id: 'gh-issues', name: 'GH Issues', icon: '🐙', desc: 'GitHub Issues 管理与自动修复', category: 'dev' },
+  { id: 'weather', name: 'Weather', icon: '🌤️', desc: '天气预报，支持全球城市查询', category: 'ai' },
+  { id: 'healthcheck', name: 'Health Check', icon: '🛡️', desc: '主机安全加固与风险检查', category: 'sys' },
+  { id: 'multi-search-engine-simple', name: '搜索聚合', icon: '🔍', desc: '多引擎聚合搜索最新信息', category: 'ai' },
+  { id: '1panel-skills', name: '1Panel', icon: '⚙️', desc: '1Panel 运维管理面板操作', category: 'sys' },
+  { id: 'mcporter', name: 'MCP Porter', icon: '🔌', desc: 'MCP 服务器连接与工具调用', category: 'tool' },
+  { id: 'tmux', name: 'Tmux', icon: '🖥️', desc: '远程 tmux 会话控制', category: 'tool' },
+  { id: 'node-connect', name: 'Node Connect', icon: '📡', desc: 'OpenClaw 节点连接与配对诊断', category: 'sys' },
+  { id: 'self-improving-agent', name: 'Self Improve', icon: '🔄', desc: '自我复盘与持续改进能力', category: 'ai' },
+  { id: 'taskflow', name: 'TaskFlow', icon: '🔀', desc: '多步骤任务的流式编排', category: 'ai' },
+  { id: 'skill-creator', name: 'Skill Creator', icon: '🎨', desc: '创建和优化 AgentSkill', category: 'tool' },
+  { id: 'web-access', name: 'Web Access', icon: '🌐', desc: '网页搜索、抓取与登录操作', category: 'ai' },
+  { id: 'china-hot-ranks', name: '热榜聚合', icon: '🔥', desc: '微博/B站/知乎等平台热门', category: 'ai' },
+  { id: 'qqbot-channel', name: 'QQ 频道', icon: '💬', desc: 'QQ 频道管理与消息推送', category: 'tool' },
+  { id: 'qqbot-remind', name: 'QQ 提醒', icon: '⏰', desc: 'QQ 定时提醒与任务调度', category: 'tool' },
+  { id: 'qqbot-media', name: 'QQ 富媒体', icon: '📷', desc: 'QQ 图片/语音/视频收发', category: 'tool' },
+];
+
+const TRAITS_DATA = [
+  { id: 'first-principles', name: '第一性原理', icon: '🎯', desc: '追问本质，从根因出发', category: 'thinking' },
+  { id: 'rigorous', name: '严谨客观', icon: '⚖️', desc: '论点必须有据，不臆断', category: 'thinking' },
+  { id: 'systems', name: '系统思维', icon: '🕸️', desc: '整体视角，考虑要素关联', category: 'thinking' },
+  { id: 'cross-domain', name: '跨界迁移', icon: '🌉', desc: '跨领域类比，激发创新', category: 'thinking' },
+  { id: 'dig-deep', name: '刨根问底', icon: '🔎', desc: '不满足表面答案，深挖三层', category: 'work' },
+  { id: 'critical', name: '批判性思维', icon: '🧐', desc: '质疑假设，审视证据', category: 'thinking' },
+  { id: 'simple-express', name: '简洁表达', icon: '✨', desc: '复杂问题，简单说清', category: 'express' },
+  { id: 'warm', name: '有温度', icon: '💗', desc: '理解情感，不冷冰冰', category: 'express' },
+  { id: 'structured', name: '结构化', icon: '📐', desc: '逻辑清晰，层次分明', category: 'express' },
+  { id: 'proactive', name: '主动预见', icon: '🔭', desc: '不只响应，还能预判', category: 'work' },
+  { id: 'evidence-based', name: '论据导向', icon: '📚', desc: '每个结论都有引用来源', category: 'thinking' },
+  { id: 'quality', name: '质量优先', icon: '💎', desc: '交付物必须经得起审查', category: 'work' },
+];
+
+// ========== State ==========
+let selectedSkills = new Set();
+let selectedTraits = new Set();
+
+// ========== Render functions ==========
+function renderSkills(filter = 'all') {
+  const grid = document.getElementById('skills-grid');
+  const filtered = filter === 'all' ? SKILLS_DATA : SKILLS_DATA.filter(s => s.category === filter);
+  grid.innerHTML = filtered.map((s, i) => `
+    <div class="card ${selectedSkills.has(s.id) ? 'selected' : ''}" 
+         data-type="skill" data-id="${s.id}" style="animation-delay:${i * 40}ms">
+      <div class="card-check">✓</div>
+      <span class="card-icon">${s.icon}</span>
+      <div class="card-name">${s.name}</div>
+      <div class="card-desc">${s.desc}</div>
+      <span class="card-tag">${s.category}</span>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => toggleItem(card.dataset.type, card.dataset.id));
+  });
+}
+
+function renderTraits(filter = 'all') {
+  const grid = document.getElementById('traits-grid');
+  const filtered = filter === 'all' ? TRAITS_DATA : TRAITS_DATA.filter(t => t.category === filter);
+  grid.innerHTML = filtered.map((t, i) => `
+    <div class="card ${selectedTraits.has(t.id) ? 'selected' : ''}" 
+         data-type="trait" data-id="${t.id}" style="animation-delay:${i * 40}ms">
+      <div class="card-check">✓</div>
+      <span class="card-icon">${t.icon}</span>
+      <div class="card-name">${t.name}</div>
+      <div class="card-desc">${t.desc}</div>
+      <span class="card-tag">${t.category}</span>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => toggleItem(card.dataset.type, card.dataset.id));
+  });
+}
+
+function toggleItem(type, id) {
+  const set = type === 'skill' ? selectedSkills : selectedTraits;
+  const card = document.querySelector(`.card[data-type="${type}"][data-id="${id}"]`);
+  
+  if (set.has(id)) {
+    set.delete(id);
+    card.classList.remove('selected');
+  } else {
+    set.add(id);
+    card.classList.add('selected');
+    animateToRobot(card);
+  }
+  
+  updateUI();
+}
+
+function animateToRobot(card) {
+  const rect = card.getBoundingClientRect();
+  const robot = document.getElementById('robot-container');
+  const robotRect = robot.getBoundingClientRect();
+  
+  const clone = card.cloneNode(true);
+  clone.className = 'flying-card';
+  clone.style.left = rect.left + 'px';
+  clone.style.top = rect.top + 'px';
+  clone.style.width = rect.width + 'px';
+  document.body.appendChild(clone);
+  
+  requestAnimationFrame(() => {
+    clone.style.left = (robotRect.left + robotRect.width / 2 - 40) + 'px';
+    clone.style.top = (robotRect.top + robotRect.height / 2 - 30) + 'px';
+    clone.style.width = '80px';
+    clone.style.opacity = '0';
+    clone.style.transform = 'scale(0.3)';
+  });
+  
+  setTimeout(() => clone.remove(), 700);
+}
+
+function updateUI() {
+  const skillCount = selectedSkills.size;
+  const traitCount = selectedTraits.size;
+  
+  document.getElementById('total-skills').textContent = skillCount;
+  document.getElementById('total-traits').textContent = traitCount;
+  document.getElementById('skill-count').textContent = skillCount;
+  document.getElementById('trait-count').textContent = traitCount;
+  
+  const robot = document.getElementById('robot-container');
+  if (skillCount > 0 || traitCount > 0) {
+    robot.classList.add('has-items');
+  } else {
+    robot.classList.remove('has-items');
+  }
+  
+  // Update chest bar
+  const total = skillCount + traitCount;
+  const maxWidth = 44;
+  const barWidth = Math.min((total / 8) * maxWidth, maxWidth);
+  document.getElementById('chest-bar').setAttribute('width', barWidth);
+  
+  // Update selected list
+  renderSelectedList();
+  
+  // Update export summary
+  updateExportSummary();
+}
+
+function renderSelectedList() {
+  const list = document.getElementById('selected-list');
+  const allSelected = [
+    ...[...selectedSkills].map(id => ({ type: 'skill', id, data: SKILLS_DATA.find(s => s.id === id) })),
+    ...[...selectedTraits].map(id => ({ type: 'trait', id, data: TRAITS_DATA.find(t => t.id === id) }))
+  ];
+  
+  if (allSelected.length === 0) {
+    list.innerHTML = `<div class="empty-state"><span class="icon">✨</span>点击左侧技能或特质卡片，组装你的灵魂</div>`;
+    return;
+  }
+  
+  list.innerHTML = `
+    <div class="selected-list-title">已选 ${allSelected.length} 项</div>
+    ${allSelected.map(item => `
+      <div class="selected-item">
+        <span class="selected-item-icon">${item.data.icon}</span>
+        <span class="selected-item-name">${item.data.name}</span>
+        <button class="selected-item-remove" data-type="${item.type}" data-id="${item.id}">✕</button>
+      </div>
+    `).join('')}
+  `;
+  
+  list.querySelectorAll('.selected-item-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleItem(btn.dataset.type, btn.dataset.id);
+      if (btn.dataset.type === 'skill') {
+        renderSkills(getCurrentSkillFilter());
+      } else {
+        renderTraits(getCurrentTraitFilter());
+      }
+    });
+  });
+}
+
+function updateExportSummary() {
+  const s = selectedSkills.size;
+  const t = selectedTraits.size;
+  const parts = [];
+  if (s > 0) parts.push(`${s} 个技能`);
+  if (t > 0) parts.push(`${t} 个特质`);
+  document.getElementById('export-summary').textContent = parts.length ? `（${parts.join(' + ')}）` : '';
+}
+
+// ========== Filter handlers ==========
+function getCurrentSkillFilter() {
+  const active = document.querySelector('#skill-filters .filter-pill.active');
+  return active ? active.dataset.filter : 'all';
+}
+function getCurrentTraitFilter() {
+  const active = document.querySelector('#trait-filters .filter-pill.active');
+  return active ? active.dataset.filter : 'all';
+}
+
+document.querySelectorAll('#skill-filters .filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#skill-filters .filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderSkills(pill.dataset.filter);
+  });
+});
+
+document.querySelectorAll('#trait-filters .filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#trait-filters .filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderTraits(pill.dataset.filter);
+  });
+});
+
+// ========== Export panel ==========
+let currentTab = 'install';
+
+document.getElementById('export-toggle').addEventListener('click', () => {
+  const toggle = document.getElementById('export-toggle');
+  const panel = document.getElementById('export-panel');
+  toggle.classList.toggle('open');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) renderExport();
+});
+
+document.querySelectorAll('.export-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.export-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    renderExport();
+  });
+});
+
+function renderExport() {
+  const code = document.getElementById('export-code');
+  
+  if (currentTab === 'install') {
+    const skillCmds = [...selectedSkills].map(id => `clawhub install ${id}`).join('\n');
+    const traitCmds = [...selectedTraits].map(id => {
+      const t = TRAITS_DATA.find(tr => tr.id === id);
+      return `# ${t.name}: ${t.desc}`;
+    }).join('\n');
+    
+    code.innerHTML = `<span class="comment"># =========================================</span>
+<span class="comment">#  🧬 灵魂生成器 — 初始化命令</span>
+<span class="comment"># =========================================</span>
+
+<span class="section"># ⚡ 技能安装</span>
+${skillCmds || '<span class="comment"># 暂无技能选择</span>'}
+
+<span class="section"># 🧠 灵魂特质</span>
+<span class="comment"># 以下特质将被写入 SOUL.md</span>
+${traitCmds || '<span class="comment"># 暂无特质选择</span>'}
+
+<span class="comment"># =========================================</span>
+<span class="comment">#  使用方法: 复制以上命令到终端执行</span>`;
+  } else {
+    const traits = [...selectedTraits].map(id => {
+      const t = TRAITS_DATA.find(tr => tr.id === id);
+      return `  - <span class="trait">${t.name}</span>: ${t.desc}`;
+    }).join('\n');
+    const skills = [...selectedSkills].map(id => {
+      const s = SKILLS_DATA.find(sk => sk.id === id);
+      return `  - <span class="command">${s.name}</span> (${s.id})`;
+    }).join('\n');
+    
+    code.innerHTML = `<span class="comment"># SOUL.md — 灵魂配置</span>
+
+<span class="section">## 灵魂特质</span>
+${traits || '<span class="comment"># 暂无特质选择</span>'}
+
+<span class="section">## 技能清单</span>
+${skills || '<span class="comment"># 暂无技能选择</span>'}
+
+<span class="comment"># TOOLS.md — 工具配置（追加以下内容）</span>
+<span class="comment"># 请根据实际安装路径配置</span>`;
+  }
+}
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const code = document.getElementById('export-code').innerText;
+  navigator.clipboard.writeText(code).then(() => showToast('命令已复制到剪贴板'));
+});
+
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  renderExport();
+  showToast('预览已刷新');
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const content = document.getElementById('export-code').innerText;
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentTab === 'install' ? 'lobster-init.sh' : 'soul-config.md';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('文件已开始下载');
+});
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ========== Particles ==========
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = Math.random() * 10 + 's';
+    container.appendChild(p);
+  }
+}
+
+// ========== Init ==========
+createParticles();
+renderSkills();
+renderTraits();
+updateUI();
+</script>
+</body>
+</html>
