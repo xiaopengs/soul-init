@@ -3,612 +3,621 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🧬 灵魂生成器</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>🧬 Agent Harness Builder</title>
   <style>
     :root {
-      --bg: #09090f;
-      --surface: #12121c;
-      --card: #1a1a28;
-      --card-h: #1e1e2e;
-      --border: rgba(245,158,11,0.1);
-      --border-h: rgba(245,158,11,0.3);
+      --bg: #080810;
+      --surface: #0f0f1d;
+      --card: #16162a;
+      --card-h: #1c1c34;
+      --border: rgba(245,158,11,0.08);
+      --border-h: rgba(245,158,11,0.25);
       --amber: #f59e0b;
       --amber-l: #fbbf24;
       --amber-d: #d97706;
-      --amber-glow: rgba(245,158,11,0.15);
-      --amber-glow-s: rgba(245,158,11,0.3);
+      --amber-glow: rgba(245,158,11,0.12);
+      --amber-glow-s: rgba(245,158,11,0.28);
       --text: #f4f4f5;
       --text2: #9ca3af;
-      --text3: #6b7280;
+      --text3: #5f6780;
       --blue: #3b82f6;
       --purple: #a78bfa;
       --green: #22c55e;
+      --red: #ef4444;
+      --cyan: #06b6d4;
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
-    button{font-family:inherit;cursor:pointer;border:none;background:none}
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+    button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-thumb{background:rgba(245,158,11,.18);border-radius:2px}
 
-    .app{display:flex;flex-direction:column;height:100vh;max-width:900px;margin:0 auto;padding:12px 16px}
+    .app{max-width:720px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
 
-    /* Header */
-    .hd{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0}
-    .hd h1{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--amber),var(--amber-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .gbtn{background:var(--amber-glow);border:1px solid rgba(245,158,11,.2);color:var(--amber);padding:4px 11px;border-radius:100px;font-size:11px;font-weight:600;transition:background .2s}
-    .gbtn:hover{background:var(--amber-glow-s)}
+    /* ── Header ── */
+    .hd{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .hd-l{display:flex;align-items:center;gap:8px}
+    .hd h1{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--amber),var(--amber-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hd-badge{font-size:9px;padding:2px 8px;border-radius:100px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--amber);font-weight:600;white-space:nowrap}
+    .hd-hint{font-size:10px;color:var(--text3)}
 
-    /* Stepper */
-    .stpr{display:flex;align-items:center;justify-content:center;gap:0;padding:4px 0 8px;flex-shrink:0}
-    .sti{display:flex;align-items:center;gap:5px}
-    .sd{width:22px;height:22px;border-radius:50%;border:2px solid var(--border-h);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s}
-    .sd.on{border-color:var(--amber);color:var(--amber);box-shadow:0 0 8px var(--amber-glow)}
-    .sd.ok{border-color:var(--green);background:var(--green);color:#000}
-    .sl{font-size:10px;font-weight:600;color:var(--text3);transition:color .3s}
-    .sl.on{color:var(--text)}
-    .sl.ok{color:var(--green)}
-    .sline{width:32px;height:2px;background:var(--border-h);margin:0 4px;transition:background .3s}
-    .sline.ok{background:var(--green)}
+    /* ── Role Selector ── */
+    .rs{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+    .rs-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--text2);transition:all .2s;white-space:nowrap}
+    .rs-btn:hover{border-color:var(--border-h);color:var(--text);background:var(--card-h)}
+    .rs-btn.on{border-color:var(--amber);background:rgba(245,158,11,.08);color:var(--amber);box-shadow:0 0 12px var(--amber-glow)}
+    .rs-btn .ri{font-size:16px}
+    .rs-info{font-size:9px;color:var(--text3);margin-left:2px;opacity:.7}
 
-    /* Body area */
-    .bd{display:none;flex-direction:column;flex:1;min-height:0;gap:8px}
-    .bd.on{display:flex}
+    /* ── Framework Diagram ── */
+    .fw{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:6px 0;flex-shrink:0;-webkit-overflow-scrolling:touch}
+    .fw::-webkit-scrollbar{height:2px}
+    .fn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;min-width:72px;position:relative;flex-shrink:0}
+    .fn:hover{border-color:var(--border-h);background:var(--card-h)}
+    .fn.active{border-color:var(--amber);background:rgba(245,158,11,.06);box-shadow:0 0 14px var(--amber-glow)}
+    .fn .fe{font-size:20px;line-height:1}
+    .fn .fl{font-size:9px;font-weight:600;color:var(--text2);text-align:center;line-height:1.2;min-height:22px;word-break:keep-all}
+    .fn.active .fl{color:var(--amber)}
+    .fn .fg{font-size:8px;color:var(--amber);opacity:.5}
+    .fn.has-gate .fg{opacity:1;font-weight:700}
+    /* connectors */
+    .fc{display:flex;align-items:center;padding:0 1px;flex-shrink:0}
+    .fc svg{width:18px;height:18px}
+    .fc line{stroke:rgba(245,158,11,.2);stroke-width:1.2}
+    .fc polyline{stroke:rgba(245,158,11,.2);stroke-width:1.2;fill:none}
 
-    /* Panel */
-    .pn{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;min-height:0;flex:1}
-    .pnhd{display:flex;align-items:center;margin-bottom:7px;flex-shrink:0}
-    .pnt{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
-    .pnh{font-size:10px;color:var(--text3);margin-left:auto}
+    /* ── Stage Detail Panel ── */
+    .sd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+    .sd-hd{display:flex;align-items:center;gap:8px}
+    .sd-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--amber);flex-shrink:0}
+    .sd-name{font-size:14px;font-weight:700}
+    .sd-gate{font-size:9px;padding:1px 6px;border-radius:100px;background:rgba(245,158,11,.15);color:var(--amber);font-weight:600;margin-left:4px}
+    .sd-desc{font-size:11px;color:var(--text2);margin-left:34px;line-height:1.5}
 
-    /* Filters */
-    .flt{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;flex-shrink:0}
-    .flt button{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all .15s}
-    .flt button:hover{border-color:var(--amber-d);color:var(--text)}
-    .flt button.on{background:var(--amber);border-color:var(--amber);color:#000}
+    /* ── Skill Grid ── */
+    .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:6px}
+    .sk{display:flex;align-items:flex-start;gap:7px;padding:9px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .18s;position:relative}
+    .sk:hover{border-color:var(--border-h);background:var(--card-h)}
+    .sk.on{border-color:var(--amber);box-shadow:0 0 0 1px rgba(245,158,11,.3),0 0 8px var(--amber-glow)}
+    .sk.on .sk-ind{transform:scale(1);opacity:1}
+    .sk-em{font-size:16px;flex-shrink:0;margin-top:1px}
+    .sk-body{flex:1;min-width:0}
+    .sk-name{font-size:11px;font-weight:600;line-height:1.3}
+    .sk-desc{font-size:9px;color:var(--text3);line-height:1.3;margin-top:1px}
+    .sk-ind{position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;opacity:0;transform:scale(0);transition:all .18s}
+    .sk-rec{font-size:8px;padding:1px 5px;border-radius:100px;background:rgba(34,197,94,.1);color:var(--green);font-weight:500;margin-left:4px;white-space:nowrap}
+    .sk-ext{font-size:8px;padding:1px 5px;border-radius:100px;background:rgba(6,182,212,.1);color:var(--cyan);font-weight:500;margin-left:4px;white-space:nowrap}
 
-    /* Cards — 2 col, with description */
-    .grd{display:grid;grid-template-columns:1fr 1fr;gap:6px;overflow-y:auto;flex:1;min-height:0;align-items:start}
-    .grd::-webkit-scrollbar{width:3px}
-    .grd::-webkit-scrollbar-thumb{background:rgba(245,158,11,.25);border-radius:2px}
-    .cd{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 9px;cursor:pointer;transition:all .18s;position:relative;display:flex;flex-direction:column;height:88px;overflow:hidden;flex-shrink:0}
-    .cd:hover{border-color:var(--border-h);background:var(--card-h)}
-    .cd.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 0 10px var(--amber-glow)}
-    .cd-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-    .ci{font-size:16px;flex-shrink:0}
-    .cn{font-size:11px;font-weight:600;line-height:1.2;flex:1}
-    .ct{font-size:9px;color:var(--amber);opacity:.7;flex-shrink:0}
-    .cdesc{font-size:10px;color:var(--text3);line-height:1.3;margin-top:auto}
-    .ck{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;opacity:0;transform:scale(0);transition:all .18s}
-    .cd.on .ck{opacity:1;transform:scale(1)}
+    /* ── Actions ── */
+    .sact{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-left:34px}
+    .sact .rbtn{font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text3);transition:all .15s}
+    .sact .rbtn:hover{border-color:var(--green);color:var(--green)}
+    .sact em{font-size:10px;color:var(--text3);font-style:normal}
 
-    /* Status bar */
-    .bar{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-top:7px;flex-shrink:0}
-    .bar span{font-size:10px;color:var(--text2)}
-    .bar strong{color:var(--amber);font-weight:700}
-    .bar .clr{font-size:10px;padding:2px 8px;border-radius:5px;background:transparent;border:1px solid var(--border);color:var(--text3);transition:all .15s}
-    .bar .clr:hover{border-color:#ef4444;color:#ef4444}
-
-    /* Robot panel */
-    .rp{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;flex:1;position:relative}
-    .rc{position:relative;width:80px;height:108px;flex-shrink:0}
-    .rg{position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,var(--amber-glow) 0%,transparent 70%);opacity:0;transition:opacity .5s}
-    .rc.gl .rg{opacity:1;animation:gp 3s ease-in-out infinite}
-    @keyframes gp{0%,100%{opacity:.5}50%{opacity:1}}
-    .rb{position:relative;z-index:1;width:100%;height:100%;animation:fl 4s ease-in-out infinite}
-    @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-    .rs{font-size:9px;color:var(--text3);margin-top:4px;text-align:center}
-    .rs strong{color:var(--amber)}
-    .rs2{font-size:9px;color:var(--text3);margin-top:2px;text-align:center}
-    .rs2 strong{color:var(--purple)}
-
-    /* Layout for step body */
-    .body-row{display:flex;gap:8px;flex:1;min-height:0}
-
-    /* Result step */
-    .rl{display:grid;grid-template-columns:150px 1fr;gap:8px;flex:1;min-height:0}
-    @media(max-width:560px){.rl{grid-template-columns:1fr}.rp{display:none}}
-    .rtcol{display:flex;flex-direction:column;min-height:0;gap:8px}
-    .rt{flex:1;display:flex;flex-direction:column;min-height:0}
-    .rthd{display:flex;border-bottom:1px solid var(--border)}
-    .rtt{flex:1;padding:7px;text-align:center;font-size:10px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;font-family:inherit;border-bottom:2px solid transparent;transition:all .15s}
-    .rtt:hover{color:var(--text)}
-    .rtt.on{color:var(--amber);border-bottom-color:var(--amber)}
-    .rcd{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.65;color:var(--text2);overflow-y:auto;flex:1;padding:8px 0;white-space:pre}
-    .rcd::-webkit-scrollbar{width:3px}
-    .rcd::-webkit-scrollbar-thumb{background:rgba(245,158,11,.25);border-radius:2px}
-    .cm{color:var(--text3)}
-    .co{color:var(--amber)}
-    .cs{color:var(--blue);font-weight:600}
-    .ct2{color:var(--purple)}
-    .ract{display:flex;gap:5px;padding-top:6px}
-    .ract .btn{flex:1;justify-content:center}
-
-    /* Nav */
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:6px 0 2px;gap:8px;flex-shrink:0}
-    .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:inherit}
-    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+    /* ── Bottom Bar ── */
+    .bb{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;flex-shrink:0}
+    .bb-l{font-size:12px;color:var(--text2)}
+    .bb-l strong{color:var(--amber);font-weight:700}
+    .bb-r{display:flex;gap:6px}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:600;transition:all .2s;font-family:inherit}
+    .btn.ghost{border:1px solid var(--border);color:var(--text2);background:transparent}
     .btn.ghost:hover{border-color:var(--border-h);color:var(--text)}
-    .btn.pri{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:#000;box-shadow:0 2px 10px var(--amber-glow-s)}
+    .btn.pri{background:linear-gradient(135deg,var(--amber),var(--amber-d));color:#000;box-shadow:0 2px 12px var(--amber-glow-s)}
     .btn.pri:hover{transform:translateY(-1px)}
 
-    /* Guide Modal */
-    #modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px}
-    #modal.on{display:flex}
-    .mbox{background:var(--surface);border:1px solid var(--border);border-radius:18px;max-width:320px;width:88%;padding:20px;animation:ma .25s ease}
-    @keyframes ma{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1}}
-    .mbox h2{font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:5px}
-    .mbox>p{color:var(--text2);font-size:11px;margin-bottom:14px}
-    .gst{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
-    .gs{display:flex;gap:9px;align-items:flex-start}
-    .gn{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;flex-shrink:0}
-    .gs h4{font-size:12px;font-weight:600;margin-bottom:1px}
-    .gs p{font-size:11px;color:var(--text2)}
-    .mbox>.btn{width:100%;justify-content:center;padding:9px}
+    /* ── Modal ── */
+    .modal-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.on{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;max-width:460px;width:92%;max-height:85vh;display:flex;flex-direction:column;animation:mo .25s ease}
+    @keyframes mo{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1}}
+    .modal-hd{padding:16px 18px 8px;display:flex;align-items:center;justify-content:space-between}
+    .modal-hd h2{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px}
+    .modal-close{font-size:18px;color:var(--text3);padding:4px;transition:color .15s}
+    .modal-close:hover{color:var(--text)}
+    .modal-body{flex:1;overflow-y:auto;padding:8px 18px 16px}
+    .modal-body pre{font-family:'JetBrains Mono','Cascadia Code',monospace;font-size:11px;line-height:1.6;color:var(--text2);white-space:pre-wrap;word-break:break-all;margin:0}
+    .modal-body .cm{color:var(--text3)}
+    .modal-body .kw{color:var(--amber)}
+    .modal-body .sk{color:var(--blue)}
+    .modal-body .gt{color:var(--green)}
+    .modal-body .pl{color:var(--purple)}
+    .modal-ft{padding:8px 18px 16px;display:flex;gap:8px}
+    .modal-ft .btn{flex:1;justify-content:center}
 
-    /* Toast */
-    #toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--amber);border-radius:8px;padding:6px 13px;font-size:11px;font-weight:500;color:var(--amber);opacity:0;transition:all .3s;z-index:9998;pointer-events:none}
+    /* ── Toast ── */
+    #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--amber);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:500;color:var(--amber);opacity:0;transition:all .3s;z-index:9998;pointer-events:none}
     #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* ── Particles BG ── */
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .particle{position:absolute;width:2px;height:2px;background:var(--amber);border-radius:50%;opacity:.15;animation:float-up 8s linear infinite}
+    @keyframes float-up{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.15}90%{opacity:.1}100%{transform:translateY(-10vh) scale(1.5);opacity:0}}
+
+    @media(max-width:500px){
+      .sg{grid-template-columns:1fr}
+      .fw{gap:0;padding:4px 0}
+      .fn{padding:7px 8px;min-width:58px}
+      .fn .fl{font-size:8px}
+      .fn .fe{font-size:17px}
+      .fc svg{width:12px;height:12px}
+    }
   </style>
 </head>
 <body>
 
+<div class="particles" id="particles"></div>
+
 <div class="app">
   <!-- Header -->
   <div class="hd">
-    <h1>🧬 灵魂生成器</h1>
-    <button class="gbtn" id="gbtn">❓ 玩法</button>
+    <div class="hd-l">
+      <h1>🧬 Agent Harness Builder</h1>
+      <span class="hd-badge">Harness Engineering</span>
+    </div>
+    <span class="hd-hint">选择一个角色开始组装</span>
   </div>
 
-  <!-- Stepper -->
-  <div class="stpr">
-    <div class="sti">
-      <div class="sd on" id="d1">1</div>
-      <span class="sl on" id="l1">灵魂特质</span>
+  <!-- Role Selector -->
+  <div class="rs" id="roleSelector"></div>
+
+  <!-- Framework Diagram -->
+  <div class="fw" id="framework"></div>
+
+  <!-- Stage Detail -->
+  <div class="sd" id="stageDetail">
+    <div class="sd-hd">
+      <div class="sd-num" id="sdNum">1</div>
+      <span class="sd-name" id="sdName"></span>
+      <span class="sd-gate" id="sdGate" style="display:none">⭐ 强制门禁</span>
     </div>
-    <div class="sline" id="ln1"></div>
-    <div class="sti">
-      <div class="sd" id="d2">2</div>
-      <span class="sl" id="l2">选择技能</span>
+    <div class="sd-desc" id="sdDesc"></div>
+    <div class="sact">
+      <em id="sdSkillCount">已选 0 项</em>
+      <button class="rbtn" id="resetNodeBtn">↺ 恢复推荐</button>
     </div>
-    <div class="sline" id="ln2"></div>
-    <div class="sti">
-      <div class="sd" id="d3">3</div>
-      <span class="sl" id="l3">生成导出</span>
-    </div>
+    <div class="sg" id="skillGrid"></div>
   </div>
 
-  <!-- ── STEP 1: Soul Traits ── -->
-  <div class="bd on" id="bd1">
-    <div class="body-row">
-      <div class="pn" style="flex:1">
-        <div class="pnhd">
-          <span class="pnt">🧠 灵魂特质</span>
-          <span class="pnh">点击卡片选中</span>
-        </div>
-        <div class="flt" id="f1">
-          <button class="on" data-v="all">全部</button>
-          <button data-v="thinking">思维方式</button>
-          <button data-v="work">工作风格</button>
-          <button data-v="express">表达风格</button>
-        </div>
-        <div class="grd" id="g1"></div>
-        <div class="bar">
-          <span>已选 <strong id="c1">0</strong> 项</span>
-          <button class="clr" id="x1">清空</button>
-        </div>
-      </div>
-      <div class="rp">
-        <div class="rc gl" id="rc1">
-          <div class="rg"></div>
-          <div class="rb">
-            <svg viewBox="0 0 80 108">
-              <line x1="40" y1="5" x2="40" y2="15" stroke="#f59e0b" stroke-width="1.2"/>
-              <circle cx="40" cy="4" r="2.5" fill="#f59e0b" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle>
-              <rect x="21" y="15" width="38" height="30" rx="5" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <circle cx="31" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="49" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="32" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <circle cx="50" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <rect x="31" y="37" width="18" height="2" rx="1" fill="#f59e0b" opacity=".4"/>
-              <rect x="37" y="46" width="6" height="4" fill="#2a2a3a"/>
-              <rect x="17" y="49" width="46" height="40" rx="6" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <rect x="25" y="54" width="30" height="23" rx="3.5" fill="#12121c" stroke="rgba(245,158,11,.25)" stroke-width=".7"/>
-              <circle cx="33" cy="62" r="2.2" fill="#3b82f6" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.5s" repeatCount="indefinite"/></circle>
-              <circle cx="40" cy="62" r="2.2" fill="#a78bfa" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" begin=".3s"/></circle>
-              <circle cx="47" cy="62" r="2.2" fill="#22c55e" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.8s" repeatCount="indefinite" begin=".6s"/></circle>
-              <rect x="29" y="69" width="22" height="2.5" rx="1.25" fill="rgba(245,158,11,.1)"/>
-              <rect id="cb1" x="29" y="69" width="0" height="2.5" rx="1.25" fill="#f59e0b"/>
-              <rect x="7" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="64" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="25" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="44" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-            </svg>
-          </div>
-        </div>
-        <div class="rs"><strong id="rtr1">0</strong> 特质</div>
-        <div class="rs2"><strong id="rsk1">0</strong> 技能</div>
-      </div>
-    </div>
-    <div class="nav">
-      <div></div>
-      <button class="btn pri" id="n1">下一步：选择技能 →</button>
-    </div>
-  </div>
-
-  <!-- ── STEP 2: Skills ── -->
-  <div class="bd" id="bd2">
-    <div class="body-row">
-      <div class="pn" style="flex:1">
-        <div class="pnhd">
-          <span class="pnt">⚡ 技能卡片</span>
-          <span class="pnh">点击卡片选中</span>
-        </div>
-        <div class="flt" id="f2">
-          <button class="on" data-v="all">全部</button>
-          <button data-v="dev">开发</button>
-          <button data-v="tool">工具</button>
-          <button data-v="ai">AI</button>
-          <button data-v="sys">系统</button>
-        </div>
-        <div class="grd" id="g2"></div>
-        <div class="bar">
-          <span>已选 <strong id="c2">0</strong> 项</span>
-          <button class="clr" id="x2">清空</button>
-        </div>
-      </div>
-      <div class="rp">
-        <div class="rc gl" id="rc2">
-          <div class="rg"></div>
-          <div class="rb">
-            <svg viewBox="0 0 80 108">
-              <line x1="40" y1="5" x2="40" y2="15" stroke="#f59e0b" stroke-width="1.2"/>
-              <circle cx="40" cy="4" r="2.5" fill="#f59e0b" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle>
-              <rect x="21" y="15" width="38" height="30" rx="5" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <circle cx="31" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="49" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="32" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <circle cx="50" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <rect x="31" y="37" width="18" height="2" rx="1" fill="#f59e0b" opacity=".4"/>
-              <rect x="37" y="46" width="6" height="4" fill="#2a2a3a"/>
-              <rect x="17" y="49" width="46" height="40" rx="6" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <rect x="25" y="54" width="30" height="23" rx="3.5" fill="#12121c" stroke="rgba(245,158,11,.25)" stroke-width=".7"/>
-              <circle cx="33" cy="62" r="2.2" fill="#3b82f6" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.5s" repeatCount="indefinite"/></circle>
-              <circle cx="40" cy="62" r="2.2" fill="#a78bfa" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" begin=".3s"/></circle>
-              <circle cx="47" cy="62" r="2.2" fill="#22c55e" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.8s" repeatCount="indefinite" begin=".6s"/></circle>
-              <rect x="29" y="69" width="22" height="2.5" rx="1.25" fill="rgba(245,158,11,.1)"/>
-              <rect id="cb2" x="29" y="69" width="0" height="2.5" rx="1.25" fill="#f59e0b"/>
-              <rect x="7" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="64" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="25" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="44" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-            </svg>
-          </div>
-        </div>
-        <div class="rs"><strong id="rtr2">0</strong> 特质</div>
-        <div class="rs2"><strong id="rsk2">0</strong> 技能</div>
-      </div>
-    </div>
-    <div class="nav">
-      <button class="btn ghost" id="b2">← 上一步</button>
-      <button class="btn pri" id="n2">下一步：生成导出 →</button>
-    </div>
-  </div>
-
-  <!-- ── STEP 3: Result ── -->
-  <div class="bd" id="bd3">
-    <div class="rl">
-      <!-- Robot -->
-      <div class="rp">
-        <div class="rc gl" id="rc3">
-          <div class="rg"></div>
-          <div class="rb">
-            <svg viewBox="0 0 80 108">
-              <line x1="40" y1="5" x2="40" y2="15" stroke="#f59e0b" stroke-width="1.2"/>
-              <circle cx="40" cy="4" r="2.5" fill="#f59e0b" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle>
-              <rect x="21" y="15" width="38" height="30" rx="5" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <circle cx="31" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="49" cy="28" r="4" fill="#f59e0b" opacity=".9"><animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/></circle>
-              <circle cx="32" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <circle cx="50" cy="27" r="1.8" fill="#fff" opacity=".5"/>
-              <rect x="31" y="37" width="18" height="2" rx="1" fill="#f59e0b" opacity=".4"/>
-              <rect x="37" y="46" width="6" height="4" fill="#2a2a3a"/>
-              <rect x="17" y="49" width="46" height="40" rx="6" fill="#1a1a28" stroke="#f59e0b" stroke-width=".9"/>
-              <rect x="25" y="54" width="30" height="23" rx="3.5" fill="#12121c" stroke="rgba(245,158,11,.25)" stroke-width=".7"/>
-              <circle cx="33" cy="62" r="2.2" fill="#3b82f6" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.5s" repeatCount="indefinite"/></circle>
-              <circle cx="40" cy="62" r="2.2" fill="#a78bfa" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" begin=".3s"/></circle>
-              <circle cx="47" cy="62" r="2.2" fill="#22c55e" opacity=".8"><animate attributeName="opacity" values=".4;1;.4" dur="1.8s" repeatCount="indefinite" begin=".6s"/></circle>
-              <rect x="29" y="69" width="22" height="2.5" rx="1.25" fill="rgba(245,158,11,.1)"/>
-              <rect id="cb3" x="29" y="69" width="22" height="2.5" rx="1.25" fill="#f59e0b"/>
-              <rect x="7" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="64" y="51" width="9" height="25" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="25" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-              <rect x="44" y="91" width="11" height="17" rx="4.5" fill="#1a1a28" stroke="rgba(245,158,11,.35)" stroke-width=".7"/>
-            </svg>
-          </div>
-        </div>
-        <div class="rs"><strong id="rtr3">0</strong> 特质</div>
-        <div class="rs2"><strong id="rsk3">0</strong> 技能</div>
-      </div>
-
-      <!-- Result -->
-      <div class="rt">
-        <div class="pnhd"><span class="pnt">📦 生成结果</span></div>
-        <div class="rthd">
-          <button class="rtt on" data-t="ins">安装命令</button>
-          <button class="rtt" data-t="sou">灵魂配置</button>
-        </div>
-        <div class="rcd" id="rcd"></div>
-        <div class="ract">
-          <button class="btn pri" id="cpy">📋 复制</button>
-          <button class="btn ghost" id="dl">💾 下载</button>
-          <button class="btn ghost" id="rst">🔄 重来</button>
-        </div>
-        <div class="nav" style="padding:4px 0 0">
-          <button class="btn ghost" id="b3">← 上一步</button>
-          <button class="btn ghost" id="rst2">🔄 重新开始</button>
-        </div>
-      </div>
+  <!-- Bottom Bar -->
+  <div class="bb">
+    <div class="bb-l">已装配 <strong id="totalCount">0</strong> 个 Skill，覆盖 <strong id="stageCount">0</strong> 个阶段</div>
+    <div class="bb-r">
+      <button class="btn ghost" id="resetAllBtn">↺ 全部重置</button>
+      <button class="btn pri" id="generateBtn">⚡ 生成 Harness 配置</button>
     </div>
   </div>
 </div>
 
-<!-- Guide Modal -->
-<div id="modal">
-  <div class="mbox">
-    <h2>🧬 灵魂生成器 · 玩法</h2>
-    <p>为新 Agent 注入灵魂，3 步完成</p>
-    <div class="gst">
-      <div class="gs">
-        <div class="gn" style="background:var(--purple);color:#fff">1</div>
-        <div><h4>挑选灵魂特质</h4><p>选择思维方式与表达风格（可多选）</p></div>
-      </div>
-      <div class="gs">
-        <div class="gn" style="background:var(--amber);color:#000">2</div>
-        <div><h4>选择技能卡片</h4><p>挑选需要的技能插件</p></div>
-      </div>
-      <div class="gs">
-        <div class="gn" style="background:var(--green);color:#fff">3</div>
-        <div><h4>生成并导出</h4><p>复制命令到终端执行即可</p></div>
-      </div>
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <h2>📋 Harness 配置</h2>
+      <button class="modal-close" id="modalClose">✕</button>
     </div>
-    <button class="btn pri" id="gstart">我知道了，开始 🦜</button>
+    <div class="modal-body">
+      <pre id="modalContent"></pre>
+    </div>
+    <div class="modal-ft">
+      <button class="btn ghost" id="copyBtn">📋 复制</button>
+      <button class="btn pri" id="downloadBtn">⬇ 下载 .md</button>
+    </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-// ── Data ─────────────────────────────────────
-const TR = [
-  {i:'🎯',n:'第一性原理',c:'thinking',v:'first-principles',d:'追问本质，从根因出发'},
-  {i:'⚖️',n:'严谨客观',c:'thinking',v:'rigorous',d:'论点必须有据，不臆断'},
-  {i:'🕸️',n:'系统思维',c:'thinking',v:'systems',d:'整体视角，考虑要素关联'},
-  {i:'🌉',n:'跨界迁移',c:'thinking',v:'cross-domain',d:'跨领域类比，激发创新'},
-  {i:'🔎',n:'刨根问底',c:'work',v:'dig-deep',d:'不满足表面答案，深挖三层'},
-  {i:'🧐',n:'批判性思维',c:'thinking',v:'critical',d:'质疑假设，审视证据'},
-  {i:'✨',n:'简洁表达',c:'express',v:'simple-express',d:'复杂问题，简单说清'},
-  {i:'💗',n:'有温度',c:'express',v:'warm',d:'理解情感，不冷冰冰'},
-  {i:'📐',n:'结构化',c:'express',v:'structured',d:'逻辑清晰，层次分明'},
-  {i:'🔭',n:'主动预见',c:'work',v:'proactive',d:'不只响应，还能预判'},
-  {i:'📚',n:'论据导向',c:'thinking',v:'evidence-based',d:'每个结论都有引用来源'},
-  {i:'💎',n:'质量优先',c:'work',v:'quality',d:'交付物必须经得起审查'},
+// ═══════════════════════════════════════════
+//  DATA: Skills Master Store
+// ═══════════════════════════════════════════
+const SKILLS = {
+  // ── 创作域 ──
+  'wechat-creation':     { emoji:'✍️', name:'花叔公众号创作', desc:'风格指导、选题讨论、审校优化', cat:'creation' },
+  'wechat-draft-publish':{ emoji:'📤', name:'公众号草稿发布', desc:'HTML→草稿箱→发布全流程', cat:'creation' },
+  'wechat-explosive-analyzer':{ emoji:'🔥', name:'爆款内容分析', desc:'六维评分、内容审核、修改方案', cat:'creation' },
+  'long-article-illustration':{ emoji:'🎨', name:'长文配图助手', desc:'段落划分、AI配图提示词生成', cat:'creation' },
+  // ── 搜索域 ──
+  'agent-reach':         { emoji:'🌐', name:'Agent Reach', desc:'17平台全网搜索（社媒/开发/视频）', cat:'search' },
+  'multi-search-engine-simple':{ emoji:'🔍', name:'多引擎搜索', desc:'10个国内网站免费搜索', cat:'search' },
+  'web-access':          { emoji:'🕸️', name:'网页访问', desc:'浏览器自动化、动态渲染抓取', cat:'search' },
+  'china-hot-ranks':     { emoji:'📊', name:'热榜聚合', desc:'微博/B站/知乎/抖音等热榜', cat:'search' },
+  // ── 开发域 ──
+  'github':              { emoji:'🐙', name:'GitHub', desc:'Issues/PR/CI/Actions 全功能', cat:'dev' },
+  'github-trending-stable':{ emoji:'📈', name:'GitHub 趋势', desc:'日/周/月增长热门仓库', cat:'dev' },
+  'gh-issues':           { emoji:'🎫', name:'GH Issues 管理', desc:'Issue订阅、自动修复、PR监控', cat:'dev' },
+  'skill-creator':       { emoji:'🛠️', name:'Skill Creator', desc:'创建、编辑、审计AgentSkill', cat:'dev' },
+  'clawhub':             { emoji:'📦', name:'ClawHub', desc:'技能市场搜索/安装/发布', cat:'dev' },
+  'mcporter':            { emoji:'🔌', name:'McPorter', desc:'MCP服务器配置、认证、调用', cat:'dev' },
+  'superpowers-mode':    { emoji:'💪', name:'Superpowers 模式', desc:'严格工程工作流（规划→TDD→审查）', cat:'dev' },
+  // ── 运维域 ──
+  'healthcheck':         { emoji:'🛡️', name:'主机安全审计', desc:'安全加固、防火墙、SSH审计', cat:'ops' },
+  '1panel-skills':       { emoji:'🖥️', name:'1Panel 管理', desc:'资源监控、网站/证书/容器管理', cat:'ops' },
+  'node-connect':        { emoji:'🔗', name:'节点连接诊断', desc:'OpenClaw配对/连接问题诊断', cat:'ops' },
+  'tmux':                { emoji:'🖵', name:'Tmux 控制', desc:'远程会话控制、终端交互', cat:'ops' },
+  // ── 编排域 ──
+  'taskflow':            { emoji:'⚙️', name:'TaskFlow', desc:'任务流编排、子任务联动、状态管理', cat:'orch' },
+  'taskflow-inbox-triage':{ emoji:'📬', name:'收件箱分类', desc:'消息意图分类、按路由分发', cat:'orch' },
+  'self-improving-agent':{ emoji:'🧠', name:'自改进学习', desc:'错误捕获、经验沉淀、持续改进', cat:'orch' },
+  // ── 社交域 ──
+  'qqbot-channel':       { emoji:'💬', name:'QQ频道管理', desc:'频道/子频道/成员/帖子管理', cat:'social' },
+  'qqbot-media':         { emoji:'📎', name:'QQ富媒体', desc:'图片/语音/视频/文件收发', cat:'social' },
+  'qqbot-remind':        { emoji:'⏰', name:'QQ定时提醒', desc:'一次性/周期性提醒管理', cat:'social' },
+  // ── 通用域 ──
+  'weather':             { emoji:'🌤️', name:'天气查询', desc:'实时天气、预报（免API Key）', cat:'util' },
+};
+
+// ═══════════════════════════════════════════
+//  DATA: Roles & Harness Pipelines
+// ═══════════════════════════════════════════
+const ROLES = [
+  {
+    id: 'content-creator',
+    emoji: '✍️',
+    name: '内容创作者',
+    desc: '微信公众号深度创作，从选题到发布全流程',
+    stages: [
+      { id:'research',    emoji:'🔎', name:'选题调研',   desc:'从热榜、搜索、趋势中筛选选题方向，输出选题池', hasGate:false, skills:['agent-reach','multi-search-engine-simple','china-hot-ranks','web-access','github-trending-stable'], recommended:['agent-reach','multi-search-engine-simple','china-hot-ranks'] },
+      { id:'creation',    emoji:'✍️', name:'内容创作 ⭐', desc:'基于选题进行正文创作、配图生成、排版设计（门禁：选题确认 → 写前评审）', hasGate:true,  skills:['wechat-creation','long-article-illustration','web-access','agent-reach'], recommended:['wechat-creation','long-article-illustration'] },
+      { id:'review',      emoji:'🔍', name:'审校优化 ⭐', desc:'爆款潜力评估、六维审核、修改润色（门禁：审核通过 → 发布前确认）', hasGate:true,  skills:['wechat-explosive-analyzer','wechat-creation','self-improving-agent'], recommended:['wechat-explosive-analyzer','self-improving-agent'] },
+      { id:'publish',     emoji:'📤', name:'排版发布',   desc:'HTML排版→上传图片→创建草稿→公众号发布', hasGate:false, skills:['wechat-draft-publish','qqbot-media','qqbot-channel'], recommended:['wechat-draft-publish'] },
+      { id:'retro',       emoji:'📊', name:'数据复盘',   desc:'阅读数据分析、读者反馈采集、经验沉淀迭代', hasGate:false, skills:['self-improving-agent','taskflow','wechat-explosive-analyzer'], recommended:['self-improving-agent'] },
+    ],
+    harnessType: '内容管线 (Content Pipeline)',
+    harnessDesc: 'Harness Engineering × 内容创作：选题→创作→审校→发布→复盘，每个阶段有明确产物和门禁。AI 负责效率，人负责判断。',
+  },
+  {
+    id: 'fullstack-dev',
+    emoji: '💻',
+    name: '全栈开发者',
+    desc: '三仓联动、五阶段+四门禁的工程化开发流程',
+    stages: [
+      { id:'init',        emoji:'🏗️', name:'初始化',     desc:'目录骨架搭建、上下文加载、环境配置', hasGate:false, skills:['github','clawhub','tmux','taskflow'], recommended:['github','taskflow'] },
+      { id:'requirement', emoji:'📋', name:'需求定义 ⭐', desc:'需求撰写→关联TAPD→DoD验收标准→涉及服务清单（门禁：需求评审）', hasGate:true,  skills:['gh-issues','taskflow','self-improving-agent','skill-creator'], recommended:['gh-issues','taskflow','self-improving-agent'] },
+      { id:'design',      emoji:'📐', name:'方案设计 ⭐', desc:'技术预研→概要设计→详细设计→兼容性检查（门禁：设计评审+追溯）', hasGate:true,  skills:['mcporter','github','skill-creator','superpowers-mode'], recommended:['mcporter','superpowers-mode'] },
+      { id:'develop',     emoji:'⚡', name:'编码实现 ⭐⭐', desc:'任务拆分→进入门禁→服务仓库检查→编码循环（选择→上下文→编码→审查→提交）', hasGate:true,  skills:['github','gh-issues','superpowers-mode','self-improving-agent','tmux'], recommended:['github','gh-issues','superpowers-mode','self-improving-agent'] },
+      { id:'delivery',    emoji:'🚀', name:'交付验证',   desc:'测试验收→MR审查→部署上线→收尾归档', hasGate:false, skills:['healthcheck','node-connect','1panel-skills','github'], recommended:['healthcheck','1panel-skills'] },
+    ],
+    harnessType: '工程管线 (Engineering Pipeline)',
+    harnessDesc: '参考 QQ 音乐 Harness Engineering 实践：五阶段流程 + 四道强制门禁 + 三层知识体系。错误在最便宜的地方被拦住。',
+  },
+  {
+    id: 'sre-ops',
+    emoji: '🛡️',
+    name: '运维/SRE',
+    desc: '监控→诊断→修复→验证→沉淀，全链路运维',
+    stages: [
+      { id:'monitor',     emoji:'📡', name:'监控感知',   desc:'主机健康检查、资源监控、异常告警感知', hasGate:false, skills:['healthcheck','1panel-skills','weather'], recommended:['healthcheck','1panel-skills'] },
+      { id:'diagnose',    emoji:'🔬', name:'诊断定位',   desc:'连接诊断、日志分析、服务依赖追踪、根因定位', hasGate:false, skills:['node-connect','tmux','multi-search-engine-simple','agent-reach'], recommended:['node-connect','tmux'] },
+      { id:'fix',         emoji:'🔧', name:'修复实施 ⭐', desc:'制定修复方案→安全审计→灰度执行（门禁：方案审批+安全校验）', hasGate:true,  skills:['github','mcporter','tmux','superpowers-mode'], recommended:['github','mcporter'] },
+      { id:'verify',      emoji:'✅', name:'验证回归',   desc:'修复后健康检查、回归测试、性能验证', hasGate:false, skills:['healthcheck','1panel-skills','node-connect'], recommended:['healthcheck','1panel-skills'] },
+      { id:'learn',       emoji:'📝', name:'经验沉淀',   desc:'故障复盘→经验结构化→知识库更新→Self-Refinement', hasGate:false, skills:['self-improving-agent','skill-creator','taskflow'], recommended:['self-improving-agent','skill-creator'] },
+    ],
+    harnessType: '运维管线 (Ops Pipeline)',
+    harnessDesc: '从监控到沉淀的完整运维闭环。每次故障都是一次知识注入，AI 和人类共同成长。',
+  },
+  {
+    id: 'media-operator',
+    emoji: '📱',
+    name: '自媒体运营',
+    desc: '多平台内容发现→创作→审核→分发→互动',
+    stages: [
+      { id:'discover',    emoji:'🔭', name:'热点发现',   desc:'全平台热榜聚合、趋势识别、选题生成', hasGate:false, skills:['china-hot-ranks','github-trending-stable','multi-search-engine-simple','agent-reach'], recommended:['china-hot-ranks','agent-reach','multi-search-engine-simple'] },
+      { id:'produce',     emoji:'🎬', name:'内容创作',   desc:'多格式内容生产（文章/图文/视频脚本）', hasGate:false, skills:['wechat-creation','long-article-illustration','web-access'], recommended:['wechat-creation','long-article-illustration'] },
+      { id:'audit',       emoji:'🔎', name:'审核润色 ⭐', desc:'内容审核→爆款潜力评估→合规检查（门禁：审核通过方可发布）', hasGate:true,  skills:['wechat-explosive-analyzer','self-improving-agent'], recommended:['wechat-explosive-analyzer','self-improving-agent'] },
+      { id:'distribute',  emoji:'📡', name:'多平台分发', desc:'公众号/QQ频道等多渠道内容分发', hasGate:false, skills:['wechat-draft-publish','qqbot-channel','qqbot-media','qqbot-remind'], recommended:['wechat-draft-publish','qqbot-channel'] },
+      { id:'engage',      emoji:'💬', name:'互动维护',   desc:'评论管理、定时互动、收件箱分类处理', hasGate:false, skills:['qqbot-remind','taskflow-inbox-triage','qqbot-channel'], recommended:['qqbot-remind','taskflow-inbox-triage'] },
+    ],
+    harnessType: '运营管线 (Media Pipeline)',
+    harnessDesc: '多平台内容运营的标准化流水线。热点发现 → 创作 → 审核 → 分发 → 互动，形成飞轮。',
+  },
+  {
+    id: 'data-engineer',
+    emoji: '📊',
+    name: '数据工程师',
+    desc: '数据采集→清洗→分析→可视化→报告的全流程',
+    stages: [
+      { id:'collect',     emoji:'🗂️', name:'数据采集',   desc:'多源数据抓取、API调度、增量采集策略', hasGate:false, skills:['agent-reach','web-access','multi-search-engine-simple','mcporter'], recommended:['agent-reach','web-access','mcporter'] },
+      { id:'clean',       emoji:'🧹', name:'清洗转换',   desc:'数据清洗→格式标准化→Schema对齐', hasGate:false, skills:['mcporter','github','taskflow'], recommended:['mcporter','taskflow'] },
+      { id:'analyze',     emoji:'🧪', name:'分析建模 ⭐', desc:'统计分析→模型训练→假设验证（门禁：数据质量校验）', hasGate:true,  skills:['taskflow','self-improving-agent','superpowers-mode'], recommended:['taskflow','self-improving-agent'] },
+      { id:'viz',         emoji:'📈', name:'可视化',     desc:'图表生成、看板构建、交互式展示', hasGate:false, skills:['long-article-illustration','wechat-draft-publish','1panel-skills'], recommended:['long-article-illustration'] },
+      { id:'report',      emoji:'📝', name:'报告输出',   desc:'分析报告撰写→结论提炼→决策建议', hasGate:false, skills:['wechat-creation','wechat-draft-publish','self-improving-agent'], recommended:['wechat-creation','self-improving-agent'] },
+    ],
+    harnessType: '数据管线 (Data Pipeline)',
+    harnessDesc: '从原始数据到决策报告的标准数据工程流。每层都有质量校验，产出可追溯。',
+  },
 ];
 
-const SK = [
-  {i:'🔧',n:'GitHub',c:'dev',v:'github',d:'GitHub 接口交互，PR/Issue 管理'},
-  {i:'📊',n:'GitHub Trending',c:'dev',v:'github-trending-stable',d:'GitHub 热门项目排行榜'},
-  {i:'🐙',n:'GH Issues',c:'dev',v:'gh-issues',d:'GitHub Issues 管理与自动修复'},
-  {i:'🌤️',n:'Weather',c:'ai',v:'weather',d:'天气预报，支持全球城市查询'},
-  {i:'🛡️',n:'Health Check',c:'sys',v:'healthcheck',d:'主机安全加固与风险检查'},
-  {i:'🔍',n:'搜索聚合',c:'ai',v:'multi-search-engine-simple',d:'多引擎聚合搜索最新信息'},
-  {i:'⚙️',n:'1Panel',c:'sys',v:'1panel-skills',d:'1Panel 运维管理面板操作'},
-  {i:'🔌',n:'MCP Porter',c:'tool',v:'mcporter',d:'MCP 服务器连接与工具调用'},
-  {i:'🖥️',n:'Tmux',c:'tool',v:'tmux',d:'远程 tmux 会话控制'},
-  {i:'📡',n:'Node Connect',c:'sys',v:'node-connect',d:'OpenClaw 节点连接与配对诊断'},
-  {i:'🔄',n:'Self Improve',c:'ai',v:'self-improving-agent',d:'自我复盘与持续改进能力'},
-  {i:'🔀',n:'TaskFlow',c:'ai',v:'taskflow',d:'多步骤任务的流式编排'},
-  {i:'🎨',n:'Skill Creator',c:'tool',v:'skill-creator',d:'创建和优化 AgentSkill'},
-  {i:'🌐',n:'Web Access',c:'ai',v:'web-access',d:'网页搜索、抓取与登录操作'},
-  {i:'🔥',n:'热榜聚合',c:'ai',v:'china-hot-ranks',d:'微博/B站/知乎等平台热门'},
-  {i:'💬',n:'QQ 频道',c:'tool',v:'qqbot-channel',d:'QQ 频道管理与消息推送'},
-  {i:'⏰',n:'QQ 提醒',c:'tool',v:'qqbot-remind',d:'QQ 定时提醒与任务调度'},
-  {i:'📷',n:'QQ 富媒体',c:'tool',v:'qqbot-media',d:'QQ 图片/语音/视频收发'},
-];
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let activeRoleIdx = 0;
+let activeStageIdx = 0;
+// selections: { roleId: { stageId: Set<skillId> } } — initialized from recommended
+let selections = {};
 
-// ── State ─────────────────────────────────────
-const ss = new Set(), st = new Set();
-let step = 1, rtab = 'ins', f1v = 'all', f2v = 'all';
+function initSelections() {
+  selections = {};
+  ROLES.forEach(r => {
+    selections[r.id] = {};
+    r.stages.forEach(s => {
+      selections[r.id][s.id] = new Set([...s.recommended]);
+    });
+  });
+}
 
-// ── Card HTML (with desc) ─────────────────────
-function cardHTML(item, sel) {
-  return `<div class="cd${sel?' on':''}" data-v="${item.v}">
-    <div class="ck">✓</div>
-    <div class="cd-top">
-      <span class="ci">${item.i}</span>
-      <span class="cn">${item.n}</span>
-      <span class="ct">${item.c}</span>
+function getSelection(roleId, stageId) {
+  return selections[roleId]?.[stageId] ?? new Set();
+}
+
+function toggleSkill(roleId, stageId, skillId) {
+  const set = selections[roleId][stageId];
+  if (set.has(skillId)) set.delete(skillId);
+  else set.add(skillId);
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+
+// Role Selector
+function renderRoleSelector() {
+  const el = document.getElementById('roleSelector');
+  el.innerHTML = ROLES.map((r,i) => `
+    <button class="rs-btn${i===activeRoleIdx?' on':''}" data-idx="${i}">
+      <span class="ri">${r.emoji}</span>${r.name}
+      <span class="rs-info">${r.harnessType}</span>
+    </button>
+  `).join('');
+  el.querySelectorAll('.rs-btn').forEach(b => {
+    b.onclick = () => { activeRoleIdx = +b.dataset.idx; activeStageIdx = 0; renderAll(); };
+  });
+}
+
+// Framework Diagram
+function renderFramework() {
+  const role = ROLES[activeRoleIdx];
+  const el = document.getElementById('framework');
+  const items = role.stages.map((s, i) => {
+    const isActive = i === activeStageIdx;
+    const gateLabel = s.hasGate ? '⭐'.repeat(s.id==='develop'?2:1) : '';
+    return `<div class="fn${isActive?' active':''}${s.hasGate?' has-gate':''}" data-stage="${i}">
+      <span class="fe">${s.emoji}</span>
+      <span class="fl">${s.name}</span>
+      ${gateLabel ? `<span class="fg">${gateLabel}</span>` : ''}
+    </div>`;
+  });
+  const connectors = role.stages.slice(1).map((_, i) => `
+    <div class="fc">
+      <svg viewBox="0 0 18 18"><line x1="0" y1="9" x2="14" y2="9"/><polyline points="10,5 14,9 10,13"/></svg>
     </div>
-    <div class="cdesc">${item.d}</div>
-  </div>`;
+  `);
+  const all = [];
+  items.forEach((item, i) => { all.push(item); if (i < connectors.length) all.push(connectors[i]); });
+  el.innerHTML = all.join('');
+  el.querySelectorAll('.fn').forEach(fn => {
+    fn.onclick = () => { activeStageIdx = +fn.dataset.stage; renderStageDetail(); renderFramework(); updateStats(); };
+  });
 }
 
-// ── Render ───────────────────────────────────
-function renderTraits(f) {
-  const g = document.getElementById('g1');
-  if (g.children.length === 0 || f !== f1v) {
-    f1v = f;
-    const d = f === 'all' ? TR : TR.filter(x => x.c === f);
-    g.innerHTML = d.map(t => cardHTML(t, st.has(t.v))).join('');
-    g.querySelectorAll('.cd').forEach(c => c.addEventListener('click', () => toggleT(c)));
-  } else {
-    g.querySelectorAll('.cd').forEach(c => c.classList.toggle('on', st.has(c.dataset.v)));
+// Stage Detail + Skills
+function renderStageDetail() {
+  const role = ROLES[activeRoleIdx];
+  const stage = role.stages[activeStageIdx];
+  const sel = getSelection(role.id, stage.id);
+
+  document.getElementById('sdNum').textContent = activeStageIdx + 1;
+  document.getElementById('sdName').textContent = stage.name.replace(/ ⭐+/g, '');
+  document.getElementById('sdDesc').textContent = stage.desc;
+  const gateEl = document.getElementById('sdGate');
+  gateEl.style.display = stage.hasGate ? 'inline-block' : 'none';
+  if (stage.hasGate) {
+    const count = stage.id === 'develop' ? 2 : 1;
+    gateEl.textContent = '⭐'.repeat(count) + ' 强制门禁';
+  }
+  document.getElementById('sdSkillCount').textContent = `已选 ${sel.size} / ${stage.skills.length} 项`;
+
+  const grid = document.getElementById('skillGrid');
+  grid.innerHTML = stage.skills.map(sid => {
+    const sk = SKILLS[sid];
+    if (!sk) return '';
+    const isOn = sel.has(sid);
+    const isRec = stage.recommended.includes(sid);
+    const isExt = !isRec; // extended (not recommended)
+    return `<div class="sk${isOn?' on':''}" data-sid="${sid}">
+      <span class="sk-em">${sk.emoji}</span>
+      <div class="sk-body">
+        <span class="sk-name">${sk.name}${isRec?' <span class="sk-rec">推荐</span>':''}${isExt?' <span class="sk-ext">扩展</span>':''}</span>
+        <div class="sk-desc">${sk.desc}</div>
+      </div>
+      <span class="sk-ind">✓</span>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.sk').forEach(card => {
+    card.onclick = () => {
+      toggleSkill(role.id, stage.id, card.dataset.sid);
+      renderStageDetail();
+      updateStats();
+    };
+  });
+
+  document.getElementById('resetNodeBtn').onclick = () => {
+    selections[role.id][stage.id] = new Set([...stage.recommended]);
+    renderStageDetail();
+    updateStats();
+  };
+}
+
+function updateStats() {
+  const role = ROLES[activeRoleIdx];
+  let totalSkills = 0;
+  let stagesWithSelection = 0;
+  role.stages.forEach(s => {
+    const sel = getSelection(role.id, s.id);
+    totalSkills += sel.size;
+    if (sel.size > 0) stagesWithSelection++;
+  });
+  document.getElementById('totalCount').textContent = totalSkills;
+  document.getElementById('stageCount').textContent = stagesWithSelection;
+}
+
+function renderAll() {
+  renderRoleSelector();
+  renderFramework();
+  renderStageDetail();
+  updateStats();
+}
+
+// ═══════════════════════════════════════════
+//  MD GENERATION
+// ═══════════════════════════════════════════
+function generateMD() {
+  const role = ROLES[activeRoleIdx];
+  const now = new Date().toISOString().slice(0,10);
+  const allSkillIds = new Set();
+  role.stages.forEach(s => {
+    getSelection(role.id, s.id).forEach(sid => allSkillIds.add(sid));
+  });
+
+  let md = '';
+  md += `# Agent Harness 配置\n\n`;
+  md += `> 生成时间：${now}\n`;
+  md += `> 角色：${role.emoji} ${role.name}\n`;
+  md += `> Harness 类型：${role.harnessType}\n`;
+  md += `> ${role.harnessDesc}\n\n`;
+  md += `---\n\n`;
+
+  // Pipeline overview
+  md += `## 🔗 Harness 管线\n\n`;
+  md += `\`\`\`\n`;
+  md += role.stages.map((s, i) => `${s.emoji} ${s.name}${i < role.stages.length-1 ? ' → ' : ''}`).join('');
+  md += `\n\`\`\`\n\n`;
+
+  // Stage details
+  role.stages.forEach((s, i) => {
+    const sel = getSelection(role.id, s.id);
+    const stageName = s.name.replace(/ ⭐+/g, '');
+    md += `### Stage ${i+1}: ${s.emoji} ${stageName}`;
+    if (s.hasGate) {
+      const count = s.id === 'develop' ? 2 : 1;
+      md += ` ${'⭐'.repeat(count)}`;
+      md += `\n> 🚧 **强制门禁** — 必须通过方可进入下一阶段\n`;
+    }
+    md += `\n${s.desc}\n\n`;
+    md += `**装配 Skill (${sel.size}):**\n\n`;
+    if (sel.size === 0) {
+      md += `- *(未选择)*\n\n`;
+    } else {
+      [...sel].forEach(sid => {
+        const sk = SKILLS[sid];
+        md += `- **${sk.emoji} ${sk.name}** — ${sk.desc}\n`;
+      });
+      md += `\n`;
+    }
+  });
+
+  // Install command
+  md += `---\n\n`;
+  md += `## 📦 安装命令\n\n`;
+  md += `\`\`\`bash\n`;
+  md += `clawhub install ${[...allSkillIds].join(' ')}\n`;
+  md += `\`\`\`\n\n`;
+
+  // Skill install details
+  md += `## 📋 Skill 清单\n\n`;
+  md += `| Skill | 描述 | 阶段 |\n`;
+  md += `|-------|------|------|\n`;
+  role.stages.forEach(s => {
+    const sel = getSelection(role.id, s.id);
+    [...sel].forEach(sid => {
+      const sk = SKILLS[sid];
+      md += `| ${sk.emoji} ${sk.name} | ${sk.desc} | ${s.name.replace(/ ⭐+/g, '')} |\n`;
+    });
+  });
+
+  return md;
+}
+
+function showModal() {
+  const md = generateMD();
+  document.getElementById('modalContent').textContent = md;
+  document.getElementById('modal').classList.add('on');
+}
+
+function hideModal() {
+  document.getElementById('modal').classList.remove('on');
+}
+
+async function copyMD() {
+  const md = generateMD();
+  try {
+    await navigator.clipboard.writeText(md);
+    toast('✅ 已复制到剪贴板');
+  } catch {
+    toast('❌ 复制失败，请手动选择复制');
   }
 }
 
-function renderSkills(f) {
-  const g = document.getElementById('g2');
-  if (g.children.length === 0 || f !== f2v) {
-    f2v = f;
-    const d = f === 'all' ? SK : SK.filter(x => x.c === f);
-    g.innerHTML = d.map(s => cardHTML(s, ss.has(s.v))).join('');
-    g.querySelectorAll('.cd').forEach(c => c.addEventListener('click', () => toggleS(c)));
-  } else {
-    g.querySelectorAll('.cd').forEach(c => c.classList.toggle('on', ss.has(c.dataset.v)));
-  }
-}
-
-function toggleS(el) {
-  const v = el.dataset.v;
-  ss.has(v) ? ss.delete(v) : ss.add(v);
-  el.classList.toggle('on');
-  update();
-}
-function toggleT(el) {
-  const v = el.dataset.v;
-  st.has(v) ? st.delete(v) : st.add(v);
-  el.classList.toggle('on');
-  update();
-}
-
-// ── UI update (no rebuild) ──────────────────
-function update() {
-  const ns = ss.size, nt = st.size;
-  document.getElementById('c1').textContent = nt;
-  document.getElementById('c2').textContent = ns;
-  document.getElementById('rtr1').textContent = nt;
-  document.getElementById('rsk1').textContent = ns;
-  document.getElementById('rtr2').textContent = nt;
-  document.getElementById('rsk2').textContent = ns;
-  document.getElementById('rtr3').textContent = nt;
-  document.getElementById('rsk3').textContent = ns;
-
-  const total = ns + nt;
-  const w = Math.min((total / 8) * 22, 22);
-  document.getElementById('cb1').setAttribute('width', w);
-  document.getElementById('cb2').setAttribute('width', w);
-  document.getElementById('cb3').setAttribute('width', w);
-
-  const gl = ns + nt > 0;
-  document.getElementById('rc1').classList.toggle('gl', gl);
-  document.getElementById('rc2').classList.toggle('gl', gl);
-  document.getElementById('rc3').classList.toggle('gl', gl);
-}
-
-// ── Navigation ─────────────────────────────────
-function go(n) {
-  document.getElementById(`bd${step}`).classList.remove('on');
-  document.getElementById(`bd${n}`).classList.add('on');
-  for (let i = 1; i <= 3; i++) {
-    const dot = document.getElementById(`d${i}`);
-    const lbl = document.getElementById(`l${i}`);
-    dot.classList.remove('on','ok');
-    lbl.classList.remove('on','ok');
-    if (i < n) { dot.classList.add('ok'); dot.textContent='✓'; lbl.classList.add('ok'); }
-    else if (i === n) { dot.classList.add('on'); lbl.classList.add('on'); }
-  }
-  document.getElementById('ln1').classList.toggle('ok', 1 < n);
-  document.getElementById('ln2').classList.toggle('ok', 2 < n);
-  step = n;
-  if (n === 3) renderResult();
-}
-
-// ── Result ─────────────────────────────────────
-function renderResult() {
-  const el = document.getElementById('rcd');
-  if (rtab === 'ins') {
-    const cmds = [...ss].map(v => `clawhub install ${v}`).join('\n');
-    const traits = [...st].map(v => {
-      const t = TR.find(x => x.v === v);
-      return `# ${t.i} ${t.n}: ${t.d}`;
-    }).join('\n');
-    el.innerHTML = `<span class="cm"># 🧬 灵魂生成器 — 初始化命令</span>
-<span class="cm"># 📌 如未安装 clawhub，请先运行：npm install -g clawhub</span>
-<span class="cs"># ⚡ 技能安装</span>\n${cmds || '<span class="cm"># 未选择技能</span>'}\n<span class="cs"># 🧠 灵魂特质</span>\n${traits || '<span class="cm"># 未选择特质</span>'}`;
-  } else {
-    const traits = [...st].map(v => {
-      const t = TR.find(x => x.v === v);
-      return `  - <span class="ct2">${t.n}</span>: ${t.d}`;
-    }).join('\n');
-    const skills = [...ss].map(v => {
-      const s = SK.find(x => x.v === v);
-      return `  - <span class="co">${s.n}</span> (${s.v})`;
-    }).join('\n');
-    el.innerHTML = `<span class="cs">## 灵魂特质</span>\n${traits || '<span class="cm"># 未选择特质</span>'}\n<span class="cs">## 技能清单</span>\n${skills || '<span class="cm"># 未选择技能</span>'}`;
-  }
-}
-
-// ── Toast ─────────────────────────────────────
-function toast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m;
-  t.classList.add('on');
-  setTimeout(() => t.classList.remove('on'), 2000);
-}
-
-// ── Restart ───────────────────────────────────
-function restart() {
-  ss.clear(); st.clear();
-  f1v = 'all'; f2v = 'all';
-  document.getElementById('g1').innerHTML = '';
-  document.getElementById('g2').innerHTML = '';
-  renderTraits('all');
-  renderSkills('all');
-  update();
-  go(1);
-}
-
-// ── Events ─────────────────────────────────────
-document.getElementById('gbtn').addEventListener('click', () => document.getElementById('modal').classList.add('on'));
-document.getElementById('gstart').addEventListener('click', () => document.getElementById('modal').classList.remove('on'));
-document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('on'); });
-if (!localStorage.getItem('si-v5')) { setTimeout(() => document.getElementById('modal').classList.add('on'), 300); localStorage.setItem('si-v5', '1'); }
-
-document.getElementById('f1').addEventListener('click', e => {
-  const btn = e.target.closest('[data-v]');
-  if (!btn) return;
-  document.querySelectorAll('#f1 button').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  renderTraits(btn.dataset.v);
-});
-document.getElementById('f2').addEventListener('click', e => {
-  const btn = e.target.closest('[data-v]');
-  if (!btn) return;
-  document.querySelectorAll('#f2 button').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  renderSkills(btn.dataset.v);
-});
-
-document.getElementById('x1').addEventListener('click', () => { st.clear(); renderTraits(f1v); update(); });
-document.getElementById('x2').addEventListener('click', () => { ss.clear(); renderSkills(f2v); update(); });
-
-document.getElementById('n1').addEventListener('click', () => go(2));
-document.getElementById('b2').addEventListener('click', () => go(1));
-document.getElementById('n2').addEventListener('click', () => go(3));
-document.getElementById('b3').addEventListener('click', () => go(2));
-document.getElementById('rst').addEventListener('click', restart);
-document.getElementById('rst2').addEventListener('click', restart);
-
-document.querySelectorAll('.rtt').forEach(t => t.addEventListener('click', () => {
-  document.querySelectorAll('.rtt').forEach(x => x.classList.remove('on'));
-  t.classList.add('on');
-  rtab = t.dataset.t;
-  renderResult();
-}));
-
-document.getElementById('cpy').addEventListener('click', () => {
-  navigator.clipboard.writeText(document.getElementById('rcd').innerText).then(() => toast('已复制到剪贴板'));
-});
-document.getElementById('dl').addEventListener('click', () => {
-  const blob = new Blob([document.getElementById('rcd').innerText], {type:'text/plain'});
+function downloadMD() {
+  const role = ROLES[activeRoleIdx];
+  const md = generateMD();
+  const blob = new Blob([md], {type:'text/markdown;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = rtab === 'ins' ? 'lobster-init.sh' : 'soul-config.md';
+  a.href = url;
+  a.download = `agent-harness-${role.id}-${new Date().toISOString().slice(0,10)}.md`;
   a.click();
-});
+  URL.revokeObjectURL(url);
+  toast('✅ 已下载配置文件');
+}
 
-// ── Init ───────────────────────────────────────
-renderTraits('all');
-renderSkills('all');
-update();
+function resetAll() {
+  initSelections();
+  renderAll();
+  toast('↺ 已恢复全部推荐配置');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('on'), 2000);
+}
+
+// ═══════════════════════════════════════════
+//  PARTICLES
+// ═══════════════════════════════════════════
+function initParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 8 + 's';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.width = (1 + Math.random() * 2) + 'px';
+    p.style.height = p.style.width;
+    container.appendChild(p);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+document.getElementById('generateBtn').onclick = showModal;
+document.getElementById('modalClose').onclick = hideModal;
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideModal(); });
+document.getElementById('copyBtn').onclick = copyMD;
+document.getElementById('downloadBtn').onclick = downloadMD;
+document.getElementById('resetAllBtn').onclick = resetAll;
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideModal(); });
+
+initSelections();
+initParticles();
+renderAll();
 </script>
 </body>
 </html>
